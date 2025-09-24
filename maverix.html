@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>MAVERIX — Audio-Visual Reasoning Benchmark</title>
+    <meta name="description" content="MAVERIX: Measuring multimodal understanding and deliberate reasoning in complex real-world audio-visual scenarios." />
+    <link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0%' stop-color='%236366f1'/><stop offset='50%' stop-color='%23a855f7'/><stop offset='100%' stop-color='%2310b981'/></linearGradient></defs><rect x='2' y='2' width='60' height='60' rx='14' fill='url(%23g)'/><path d='M20 40 L28 20 L36 40 L44 20' stroke='white' stroke-width='4' fill='none' stroke-linecap='round'/></svg>">
+    <!-- Tailwind (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: { extend: { fontFamily: { sans: ['ui-sans-serif','system-ui','-apple-system','Segoe UI','Roboto','Inter','Arial','Noto Sans','Apple Color Emoji','Segoe UI Emoji'] } } }
+      }
+    </script>
+    <style>
+      html { scroll-behavior: smooth; }
+    </style>
+    <!-- React 18 + ReactDOM (UMD) -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Babel compiler for in-browser JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  </head>
+  <body class="bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100 antialiased">
+    <div id="root"></div>
+
+    <script type="text/babel">
+      const { useMemo, useState, useEffect } = React;
+
+      // ---------- App ----------
+      function MaverixSite() {
+        const [dark, setDark] = useState(true);
+        useEffect(() => {
+          if (dark) document.documentElement.classList.add("dark");
+          else document.documentElement.classList.remove("dark");
+        }, [dark]);
+
+        const sections = [
+          { id: "overview", label: "Overview" },
+          { id: "news", label: "News" },
+          { id: "tasks", label: "Tasks" },
+          { id: "leaderboard", label: "Leaderboard" },
+          { id: "authors", label: "Authors" },
+          { id: "bibtex", label: "BibTeX" },
+          { id: "faq", label: "FAQ" },
+        ];
+
+        return (
+          <div className="min-h-screen">
+            <Header sections={sections} dark={dark} setDark={setDark} />
+            <main className="pb-24">
+              <Hero />
+              <StatsBar />
+              <Section id="overview" title="Overview">
+                <Overview />
+              </Section>
+              <Section id="news" title="News &amp; Updates">
+                <News />
+              </Section>
+              <Section id="tasks" title="Tasks in MAVERIX">
+                <Tasks />
+              </Section>
+              <Section id="leaderboard" title="Leaderboard">
+                <Leaderboard />
+              </Section>
+              <Section id="openended" title="Open-Ended (GPT-4o-judged)">
+                <OpenEnded />
+              </Section>
+              <Section id="authors" title="Authors &amp; Affiliations">
+                <Authors />
+              </Section>
+              <Section id="bibtex" title="BibTeX">
+                <BibTeX />
+              </Section>
+              <Section id="faq" title="FAQ">
+                <FAQ />
+              </Section>
+            </main>
+            <Footer />
+          </div>
+        );
+      }
+
+      function Header({ sections, dark, setDark }) {
+        return (
+          <header className="sticky top-0 z-50 backdrop-blur supports-[backdrop-filter]:bg-white/70 dark:supports-[backdrop-filter]:bg-slate-950/60 border-b border-slate-200/60 dark:border-slate-800 bg-white/80 dark:bg-slate-950/40">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+              <a href="#top" className="flex items-center gap-3">
+                <Logo className="h-8 w-8" />
+                <div className="font-semibold tracking-tight text-lg">MAVERIX</div>
+              </a>
+              <nav className="hidden md:flex items-center gap-1">
+                {sections.map((s) => (
+                  <a key={s.id} href={"#" + s.id} className="px-3 py-2 rounded-lg text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-800">
+                    {s.label}
+                  </a>
+                ))}
+              </nav>
+              <div className="flex items-center gap-2">
+                <a
+                  href="#leaderboard"
+                  className="hidden sm:inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-sm hover:opacity-90"
+                >
+                  <span>See Leaderboard</span>
+                </a>
+                <button
+                  aria-label="Toggle dark mode"
+                  onClick={() => setDark(!dark)}
+                  className="inline-flex items-center justify-center h-9 w-9 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800"
+                >
+                  {dark ? <MoonIcon className="h-5 w-5" /> : <SunIcon className="h-5 w-5" />}
+                </button>
+              </div>
+            </div>
+          </header>
+        );
+      }
+
+      function Hero() {
+        return (
+          <section className="relative overflow-hidden">
+            <div className="pointer-events-none absolute inset-0 -z-10">
+              <div className="absolute -top-32 left-1/2 -translate-x-1/2 h-[38rem] w-[60rem] rounded-full bg-gradient-to-tr from-indigo-500/20 via-fuchsia-500/20 to-emerald-500/20 blur-3xl" />
+            </div>
+
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 sm:py-24 flex flex-col items-center text-center">
+              <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 dark:border-slate-800 bg-white/60 dark:bg-slate-900/60 px-3 py-1 text-xs text-slate-600 dark:text-slate-300">
+                <SparklesIcon className="h-4 w-4" />
+                <span>Audio–Visual Reasoning Benchmark</span>
+              </div>
+              <h1 className="mt-4 text-4xl sm:text-6xl font-black tracking-tight">
+                MAVERIX
+              </h1>
+              <p className="mt-4 max-w-2xl text-base sm:text-lg leading-relaxed text-slate-600 dark:text-slate-300">
+                Measuring <span className="font-semibold">multimodal understanding</span> and <span className="font-semibold">deliberate reasoning</span>
+                in complex real-world audio-visual scenarios: <em>Visual Reasoning</em>, <em>Cross-Modal Retrieval</em>, <em>Context Understanding</em>, and <em>Situational Awareness</em>.
+              </p>
+
+              <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+                <a href="https://arxiv.org" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold bg-indigo-600 text-white shadow-sm hover:bg-indigo-700">
+                  <FileIcon className="h-4 w-4" /> Paper (arXiv)
+                </a>
+                <a href="https://github.com" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold border border-slate-300 dark:border-slate-700 hover:bg-slate-100/80 dark:hover:bg-slate-800/60">
+                  <GitHubIcon className="h-4 w-4" /> Code (GitHub)
+                </a>
+                <a href="https://huggingface.co" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold border border-slate-300 dark:border-slate-700 hover:bg-slate-100/80 dark:hover:bg-slate-800/60">
+                  <DownloadIcon className="h-4 w-4" /> Data (HF)
+                </a>
+                <a href="#bibtex" className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-800">
+                  <ClipboardIcon className="h-4 w-4" /> Cite
+                </a>
+              </div>
+
+              <div className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-3 w-full max-w-3xl">
+                <Stat number="700" label="Videos" />
+                <Stat number="2,556" label="QA Pairs" />
+                <Stat number="4" label="Tasks" />
+                <Stat number="10s–63min" label="Clip Length Range" />
+              </div>
+            </div>
+          </section>
+        );
+      }
+
+      function StatsBar(){
+        const items = [
+          {label: "Heterogeneous Modalities", detail: "Video, Audio, Subtitles"},
+          {label: "Challenging Settings", detail: "Localized &amp; Long-form"},
+          {label: "Human Upper-Bound", detail: "92.8% (MCQ)"},
+        ];
+        return (
+          <div className="border-y border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-900/40">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 items-center justify-between">
+                {items.map((it, i) => (
+                  <div key={i} className="flex items-center gap-3 text-sm">
+                    <DotIcon className="h-5 w-5" />
+                    <div>
+                      <div className="font-semibold leading-tight">{it.label}</div>
+                      <div className="text-slate-600 dark:text-slate-400 leading-tight" dangerouslySetInnerHTML={{__html: it.detail}} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      function Overview(){
+        return (
+          <div className="space-y-3 leading-relaxed text-slate-700 dark:text-slate-300">
+            <p>
+              <strong>MAVERIX</strong> evaluates multimodal models in realistic, complex scenes that require
+              fine-grained perception, temporal reasoning, and cross-modal alignment. Questions span diverse
+              situations like collaborative tasks, safety-critical interactions, and dynamic environments.
+            </p>
+            <p>
+              The benchmark emphasizes four capabilities: <em>Visual Reasoning</em>, <em>Cross-Modal Retrieval</em>,
+              <em>Context Understanding</em>, and <em>Situational Awareness</em>. We provide standardized evaluation
+              scripts, a public toolkit, and a submission protocol for fair comparison.
+            </p>
+            <ul className="list-disc pl-6">
+              <li>Heterogeneous inputs: long videos, ambient audio, and optional subtitles.</li>
+              <li>Carefully curated to stress temporal grounding and causality.</li>
+              <li>Human experts substantially outperform current LMMs, revealing large headroom.</li>
+            </ul>
+          </div>
+        );
+      }
+
+      function News(){
+        const items = [
+          {date: "2025-09-10", text: "Evaluation server opened for Test set (submit via CLI)."},
+          {date: "2025-08-21", text: "v1.0 dataset released on Hugging Face with annotations."},
+          {date: "2025-07-30", text: "Website &amp; docs launched."},
+        ];
+        return (
+          <ul className="space-y-3">
+            {items.map((n, i) => (
+              <li key={i} className="flex items-start gap-3">
+                <CalendarIcon className="h-5 w-5 mt-0.5" />
+                <div>
+                  <div className="text-sm text-slate-500">[{n.date}]</div>
+                  <div className="font-medium">{n.text}</div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        );
+      }
+
+      function Tasks(){
+        const tasks = [
+          {key: "vr", title: "Visual Reasoning", desc: "Multi-step spatial & temporal reasoning over frames; object & motion understanding."},
+          {key: "xr", title: "Cross-Modal Retrieval", desc: "Align audio cues, descriptions, and video snippets; retrieve relevant moments."},
+          {key: "ctx", title: "Context Understanding", desc: "Track agents, intentions, and evolving scene state across time."},
+          {key: "sa", title: "Situational Awareness", desc: "Identify risks, affordances, and next actions in dynamic settings."},
+        ];
+        return (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {tasks.map(t => (
+              <div key={t.key} className="rounded-2xl border border-slate-200 dark:border-slate-800 p-4 bg-white/50 dark:bg-slate-900/40 shadow-sm">
+                <div className="flex items-center gap-3">
+                  <Badge>{t.title}</Badge>
+                </div>
+                <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{t.desc}</p>
+              </div>
+            ))}
+          </div>
+        );
+      }
+
+      function Leaderboard(){
+        const [sortKey, setSortKey] = useState("overall");
+        const [dir, setDir] = useState("desc");
+        const [query, setQuery] = useState("");
+        const rows = useMemo(() => PAPER_ROWS
+          .filter(r => r.name.toLowerCase().includes(query.toLowerCase()))
+          .sort((a,b) => {
+            const av = a[sortKey] ?? -Infinity; const bv = b[sortKey] ?? -Infinity;
+            const s = (av) - (bv);
+            return dir === "asc" ? s : -s;
+          }), [sortKey, dir, query]);
+
+        const th = (k, label, right=false) => (
+          <th className={"px-3 py-2 text-left text-xs font-semibold " + (right ? "text-right" : "")}>
+            <button onClick={() => toggleSort(k)} className="inline-flex items-center gap-1 hover:underline">
+              <span>{label}</span>
+              {sortKey === k ? (dir === "asc" ? <ChevronUp className="h-3 w-3"/> : <ChevronDown className="h-3 w-3"/>) : null}
+            </button>
+          </th>
+        );
+
+        function toggleSort(k){
+          if (k === sortKey) setDir(d => d === "asc" ? "desc" : "asc");
+          else { setSortKey(k); setDir("desc"); }
+        }
+
+        return (
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium">Split:</span>
+                <div className="inline-flex rounded-xl border border-slate-200 dark:border-slate-800 p-1">
+                  {["Val", "Test"].map(s => (
+                    <button key={s} className={"px-3 py-1.5 text-sm rounded-lg " + (s==="Val" ? "bg-slate-100 dark:bg-slate-800" : "")}>{s}</button>
+                  ))}
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  value={query}
+                  onChange={e=>setQuery(e.target.value)}
+                  placeholder="Search model…"
+                  className="w-64 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent px-3 py-2 text-sm focus:outline-none"
+                />
+                <a href="#" className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold border border-slate-300 dark:border-slate-700 hover:bg-slate-100/80 dark:hover:bg-slate-800/60">
+                  <UploadIcon className="h-4 w-4"/> Submit Results
+                </a>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800">
+              <table className="min-w-full text-sm">
+                <thead className="bg-slate-50 dark:bg-slate-900/40">
+                  <tr>
+                    {th("name", "Model")}
+                    {th("size", "Size")}
+                    {th("date", "Source")}
+                    {th("overall", "Overall (MCQ)", true)}
+                    {th("vr", "Visual R.", true)}
+                    {th("xr", "X-Modal Ret.", true)}
+                    {th("ctx", "Context", true)}
+                    {th("sa", "Sit. Aware.", true)}
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((r, i) => (
+                    <tr key={i} className="border-t border-slate-100 dark:border-slate-800">
+                      <td className="px-3 py-2 font-medium whitespace-nowrap">{r.name}</td>
+                      <td className="px-3 py-2 text-slate-600 dark:text-slate-400 whitespace-nowrap">{r.size || "—"}</td>
+                      <td className="px-3 py-2 text-slate-600 dark:text-slate-400 whitespace-nowrap">{r.date || "Paper"}</td>
+                      <td className="px-3 py-2 text-right font-semibold">{fmt(r.overall)}</td>
+                      <td className="px-3 py-2 text-right">{fmt(r.vr)}</td>
+                      <td className="px-3 py-2 text-right">{fmt(r.xr)}</td>
+                      <td className="px-3 py-2 text-right">{fmt(r.ctx)}</td>
+                      <td className="px-3 py-2 text-right">{fmt(r.sa)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="text-xs text-slate-500">
+              Overall = MCQ Best-Multi accuracy (max of V+S and V+A) reported in the MAVERIX paper's Table 3; Human = 92.8%.
+              Open-ended scores are discussed in the paper and can be added as a separate table if desired.
+            </p>
+          </div>
+        );
+      }
+
+      function Authors(){
+        const authors = [
+          {name: "Liuyue Xie", aff: 1, equal: true},
+          {name: "George Z. Wei", aff: 1, equal: true},
+          {name: "Avik Kuthiala", aff: 1, equal: true},
+          {name: "Ce Zheng", aff: 1},
+          {name: "Ananya Bal", aff: 1},
+          {name: "Mosam Dabhi", aff: 1},
+          {name: "Liting Wen", aff: 1},
+          {name: "Taru Rustagi", aff: 1},
+          {name: "Ethan Lai", aff: 1},
+          {name: "Sushil Khyalia", aff: 1},
+          {name: "Rohan Choudhury", aff: 1},
+          {name: "Morteza Ziyadi", aff: 2},
+          {name: "Xu Zhang", aff: 2},
+          {name: "Hao Yang", aff: 2},
+          {name: "László A. Jeni", aff: 1},
+        ];
+        const affs = [
+          {id: 1, name: "Carnegie Mellon University"},
+          {id: 2, name: "Amazon"},
+        ];
+        const affName = (id) => (affs.find(a=>a.id===id)?.name ?? ("Affiliation " + id));
+        return (
+          <div className="space-y-6">
+            {/* Inline author list with superscripts (* for equal contrib) */}
+            <div className="flex flex-wrap gap-2 text-base">
+              {authors.map((a, i) => (
+                <div key={i} className="inline-flex items-baseline gap-1">
+                  <span className="font-semibold">{a.name}</span>
+                  <sup className="text-xs align-super text-slate-500">{a.equal ? ("*" + a.aff) : a.aff}</sup>
+                  {i < authors.length - 1 && <span>,</span>}
+                </div>
+              ))}
+            </div>
+
+            {/* Affiliations */}
+            <div className="text-sm text-slate-600 dark:text-slate-300">
+              {affs.map((a) => (
+                <div key={a.id} className="flex items-baseline gap-2">
+                  <sup className="text-xs align-super text-slate-500">{a.id}</sup>
+                  <span>{a.name}</span>
+                </div>
+              ))}
+              <div className="mt-2 text-xs">* Equal contribution</div>
+            </div>
+
+            {/* Cards */}
+            <div className="grid md:grid-cols-3 gap-4">
+              {authors.map((a, i) => (
+                <div key={i} className="rounded-2xl border border-slate-200 dark:border-slate-800 p-4 bg-white/50 dark:bg-slate-900/40">
+                  <div className="font-semibold flex items-center gap-2">
+                    <span>{a.name}</span>
+                    {a.equal && <span className="text-[10px] px-1 rounded border border-slate-300 dark:border-slate-700">*</span>}
+                  </div>
+                  <div className="text-sm text-slate-600 dark:text-slate-400">{affName(a.aff)}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      }
+
+      function OpenEnded(){
+        // Rows: Open-ended judged scores (0-5), GPT-4o as judge. Includes token lengths.
+        const ROWS = [
+          { name: "Human", a_s: 1.7, v: 2.6, av: 3.4, d: "+0.8", avg: 16.1, max: 140, std: 12.7, strong: true },
+          { name: "EgoGPT-7B", a_s: 0.7, v: 1.2, av: 1.3, d: "+0.1", avg: 9.4, max: 112, std: 17.8 },
+          { name: "Ola-7B", a_s: 1.4, v: 0.9, av: 1.5, d: "+0.1", avg: 17.9, max: 71, std: 15.4 },
+          { name: "VITA 1.5", a_s: 0.8, v: 0.7, av: 0.5, d: "−0.3", avg: 55.3, max: 273, std: 29.1 },
+          { name: "Qwen-2-Omni", a_s: 1.0, v: 1.2, av: 1.2, d: "±0.0", avg: 47.0, max: 178, std: 26.5 },
+          { name: "Qwen-2-VL (7B)", a_s: 1.2, v: 1.4, av: 1.6, d: "+0.2", avg: 22.9, max: 72, std: 15.7 },
+          { name: "Qwen-2.5-VL (7B)", a_s: 1.1, v: 1.4, av: 1.7, d: "+0.3", avg: 52.9, max: 86, std: 17.7 },
+          { name: "InternVL2 (8B)", a_s: 0.9, v: 0.9, av: 1.1, d: "+0.2", avg: 24.0, max: 95, std: 17.6 },
+          { name: "DeepSeek-VL2-small (2.8B)", a_s: 1.2, v: 1.0, av: 1.4, d: "+0.2", avg: 27.4, max: 512, std: 61.0 },
+          { name: "LLaVA-OneVision (7B)", a_s: 1.3, v: 1.4, av: 1.6, d: "+0.2", avg: 18.1, max: 70, std: 9.3 },
+          { name: "Gemini 2.0 Flash-Lite", a_s: 1.4, v: 1.6, av: 1.9, d: "+0.3", avg: 20.9, max: 103, std: 14.6 },
+          { name: "Gemini 2.5 Flash-Lite", a_s: 1.4, v: 1.4, av: 1.9, d: "+0.5", avg: 32.6, max: 112, std: 20.7 },
+          { name: "Claude 3.5 Sonnet", a_s: 1.6, v: 1.7, av: 2.2, d: "+0.5", avg: 59.8, max: 95, std: 4.8 },
+          { name: "GPT-4o", a_s: 1.6, v: 1.4, av: 2.2, d: "+0.6", avg: 50.8, max: 102, std: 17.9 },
+          { name: "Grok-4", a_s: 1.7, v: 2.0, av: 2.4, d: "+0.4", avg: 131.7, max: 11022, std: 322.3 },
+          { name: "NOVA-Lite", a_s: 1.1, v: 1.0, av: 1.2, d: "+0.1", avg: 23.5, max: 75, std: 18.4 },
+          { name: "NOVA-Pro", a_s: 1.1, v: 1.2, av: 1.5, d: "+0.3", avg: 35.4, max: 78, std: 20.9 },
+        ];
+
+        const [q, setQ] = React.useState("");
+        const filtered = ROWS.filter(r => r.name.toLowerCase().includes(q.toLowerCase()));
+
+        return (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between gap-2">
+              <input
+                value={q}
+                onChange={e=>setQ(e.target.value)}
+                placeholder="Search model…"
+                className="w-64 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent px-3 py-2 text-sm focus:outline-none"
+              />
+              <div className="text-xs text-slate-500">Judged by GPT-4o on a 0–5 rubric.</div>
+            </div>
+
+            <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800">
+              <table className="min-w-full text-sm">
+                <thead className="bg-slate-50 dark:bg-slate-900/40">
+                  <tr>
+                    <th className="px-3 py-2 text-left text-xs font-semibold">Model</th>
+                    <th className="px-3 py-2 text-right text-xs font-semibold">A/S</th>
+                    <th className="px-3 py-2 text-right text-xs font-semibold">V</th>
+                    <th className="px-3 py-2 text-right text-xs font-semibold">AV/SV</th>
+                    <th className="px-3 py-2 text-right text-xs font-semibold">ΔMulti</th>
+                    <th className="px-3 py-2 text-right text-xs font-semibold">Tokens Avg</th>
+                    <th className="px-3 py-2 text-right text-xs font-semibold">Tokens Max</th>
+                    <th className="px-3 py-2 text-right text-xs font-semibold">Tokens Std</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.map((r, i) => (
+                    <tr key={i} className="border-t border-slate-100 dark:border-slate-800">
+                      <td className={"px-3 py-2 whitespace-nowrap " + (r.strong ? "font-semibold" : "")}>{r.name}</td>
+                      <td className="px-3 py-2 text-right">{r.a_s?.toFixed(1)}</td>
+                      <td className="px-3 py-2 text-right">{r.v?.toFixed(1)}</td>
+                      <td className="px-3 py-2 text-right font-medium">{r.av?.toFixed(1)}</td>
+                      <td className="px-3 py-2 text-right">{r.d}</td>
+                      <td className="px-3 py-2 text-right">{r.avg}</td>
+                      <td className="px-3 py-2 text-right">{r.max}</td>
+                      <td className="px-3 py-2 text-right">{r.std}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <p className="text-xs text-slate-500">
+              Numbers are from the MAVERIX paper (Table 6). ΔMulti compares AV/SV with the best of A/S or V.
+            </p>
+          </div>
+        );
+      }
+
+      function BibTeX(){
+        const bib = `@inproceedings{xie2025maverix,
+  title={MAVERIX: Multimodal Audio-Visual Evaluation in Real-World Interactions},
+  author={Xie, Liuyue and Wei, George Z. and Kuthiala, Avik and Zheng, Ce and Bal, Ananya and Dabhi, Mosam and Wen, Liting and Rustagi, Taru and Lai, Ethan and Khyalia, Sushil and Choudhury, Rohan and Ziyadi, Morteza and Zhang, Xu and Yang, Hao and Jeni, L{\\'a}szl{\\'o} A.},
+  booktitle={Proceedings of AAAI (under review)},
+  year={2025},
+  note={* Equal contribution}
+}`;
+        function copy(){
+          if (navigator.clipboard) navigator.clipboard.writeText(bib);
+          else alert("Copy not supported in this browser.");
+        }
+        return (
+          <div>
+            <div className="flex items-center justify-between gap-2">
+              <div className="text-sm text-slate-600 dark:text-slate-400">Click to copy citation</div>
+              <button onClick={copy} className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold border border-slate-300 dark:border-slate-700 hover:bg-slate-100/80 dark:hover:bg-slate-800/60">
+                <ClipboardIcon className="h-4 w-4"/> Copy
+              </button>
+            </div>
+            <pre className="mt-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 p-4 overflow-x-auto text-xs">
+{bib}
+            </pre>
+            <p className="mt-2 text-xs text-slate-500">Update venue/year as appropriate.</p>
+          </div>
+        );
+      }
+
+      function FAQ(){
+        const items = [
+          {q: "How do I evaluate on MAVERIX?", a: "Use our evaluation toolkit (pip install maverix-eval) and follow the README to generate predictions; submit a JSON to the evaluation server."},
+          {q: "Is audio required?", a: "Some tasks require audio; for others, models may use video-only or subtitles as ablations. Report the modality configuration you use."},
+          {q: "How do I submit to leaderboard?", a: "Prepare the submission file per schema, then upload via the Submit Results button."},
+        ];
+        return (
+          <div className="space-y-4">
+            {items.map((it, i) => (
+              <details key={i} className="group rounded-2xl border border-slate-200 dark:border-slate-800 p-4 bg-white/50 dark:bg-slate-900/40">
+                <summary className="cursor-pointer list-none flex items-center justify-between gap-3">
+                  <span className="font-semibold">{it.q}</span>
+                  <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
+                </summary>
+                <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{it.a}</p>
+              </details>
+            ))}
+          </div>
+        );
+      }
+
+      function Footer(){
+        return (
+          <footer className="border-t border-slate-200 dark:border-slate-800">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
+              <div className="flex flex-col md:flex-row items-start justify-between gap-6">
+                <div>
+                  <div className="flex items-center gap-3">
+                    <Logo className="h-7 w-7"/>
+                    <div className="font-semibold">MAVERIX</div>
+                  </div>
+                  <p className="mt-2 text-sm text-slate-600 dark:text-slate-400 max-w-md">
+                    Website design inspired by modern benchmark pages (e.g., MMMU, Nerfies, MathVista). This page is licensed CC BY-SA 4.0.
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 gap-6 text-sm">
+                  <div>
+                    <div className="font-semibold">Resources</div>
+                    <ul className="mt-2 space-y-1">
+                      <li><a className="hover:underline underline-offset-4 decoration-2" href="https://github.com" target="_blank" rel="noreferrer">GitHub</a></li>
+                      <li><a className="hover:underline underline-offset-4 decoration-2" href="https://huggingface.co" target="_blank" rel="noreferrer">Hugging Face</a></li>
+                      <li><a className="hover:underline underline-offset-4 decoration-2" href="#bibtex">Citation</a></li>
+                    </ul>
+                  </div>
+                  <div>
+                    <div className="font-semibold">Contact</div>
+                    <ul className="mt-2 space-y-1">
+                      <li><a className="hover:underline underline-offset-4 decoration-2" href="mailto:info@maverix-benchmark.org">info@maverix-benchmark.org</a></li>
+                      <li><a className="hover:underline underline-offset-4 decoration-2" href="#">Eval Server</a></li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-8 text-xs text-slate-500">© {new Date().getFullYear()} MAVERIX Authors</div>
+            </div>
+          </footer>
+        );
+      }
+
+      // ---------- Small shared components ----------
+      function Section({id, title, children}){
+        return (
+          <section id={id} className="scroll-mt-20 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">{title}</h2>
+            <div className="mt-6">{children}</div>
+          </section>
+        );
+      }
+
+      function Stat({number, label}){
+        return (
+          <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/60 dark:bg-slate-900/60 p-4 text-center">
+            <div className="text-2xl font-extrabold tabular-nums" dangerouslySetInnerHTML={{__html:number}} />
+            <div className="text-xs text-slate-600 dark:text-slate-400">{label}</div>
+          </div>
+        );
+      }
+
+      function Badge({children}){
+        return (
+          <span className="inline-flex items-center rounded-full border border-slate-200 dark:border-slate-700 bg-white/60 dark:bg-slate-900/60 px-2.5 py-1 text-xs font-semibold">
+            {children}
+          </span>
+        );
+      }
+
+      function fmt(n){
+        if (n == null || Number.isNaN(n)) return "—";
+        return n.toFixed(1) + "%";
+      }
+
+      // ---------- Icons (inline, no deps) ----------
+      function Logo({className}){
+        return (
+          <svg viewBox="0 0 64 64" className={className} aria-hidden>
+            <defs>
+              <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor="#6366f1"/>
+                <stop offset="50%" stopColor="#a855f7"/>
+                <stop offset="100%" stopColor="#10b981"/>
+              </linearGradient>
+            </defs>
+            <rect x="2" y="2" width="60" height="60" rx="14" fill="url(#g)"/>
+            <path d="M20 40 L28 20 L36 40 L44 20" stroke="white" strokeWidth="4" fill="none" strokeLinecap="round"/>
+          </svg>
+        );
+      }
+      function MoonIcon({className}){
+        return (
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className={className}><path d="M21 12.79A9 9 0 1111.21 3a7 7 0 109.79 9.79z"/></svg>
+        );
+      }
+      function SunIcon({className}){
+        return (
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className={className}><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        );
+      }
+      function SparklesIcon({className}){return(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className={className}><path d="M5 3l2 5 5 2-5 2-2 5-2-5-5-2 5-2 2-5z"/><path d="M16 7l1 2 2 1-2 1-1 2-1-2-2-1 2-1 1-2z"/></svg>);} 
+      function FileIcon({className}){return(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className={className}><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>);} 
+      function GitHubIcon({className}){return(<svg viewBox="0 0 24 24" className={className} fill="currentColor"><path d="M12 .5a12 12 0 00-3.79 23.4c.6.1.82-.26.82-.58v-2.17c-3.34.73-4.04-1.6-4.04-1.6-.55-1.39-1.33-1.77-1.33-1.77-1.09-.75.08-.74.08-.74 1.21.08 1.84 1.26 1.84 1.26 1.07 1.84 2.8 1.3 3.49.99.11-.78.42-1.3.76-1.6-2.67-.3-5.47-1.34-5.47-5.97 0-1.32.47-2.4 1.25-3.25-.13-.31-.54-1.56.12-3.26 0 0 1.01-.32 3.3 1.24a11.4 11.4 0 016 0c2.28-1.56 3.3-1.24 3.3-1.24.66 1.7.25 2.95.13 3.26.78.85 1.24 1.93 1.24 3.25 0 4.64-2.81 5.66-5.49 5.96.43.37.81 1.1.81 2.23v3.3c0 .32.22.69.83.57A12 12 0 0012 .5z"/></svg>);} 
+      function DownloadIcon({className}){return(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className={className}><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>);} 
+      function ClipboardIcon({className}){return(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className={className}><rect x="8" y="2" width="8" height="4" rx="1"/><rect x="4" y="6" width="16" height="14" rx="2"/></svg>);} 
+      function CalendarIcon({className}){return(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className={className}><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>);} 
+      function UploadIcon({className}){return(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className={className}><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><path d="M7 10l5-5 5 5"/><path d="M12 5v10"/></svg>);} 
+      function ChevronDown({className}){return(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className={className}><path d="M6 9l6 6 6-6"/></svg>);} 
+      function ChevronUp({className}){return(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className={className}><path d="M18 15l-6-6-6 6"/></svg>);} 
+      function DotIcon({className}){return(<svg viewBox="0 0 24 24" className={className} fill="currentColor"><circle cx="12" cy="12" r="4"/></svg>);} 
+
+      // ---------- Paper Results (MCQ Best-Multi %) ----------
+      // Source: Table 3 in MAVERIX paper (Human = 92.8%).
+      const PAPER_ROWS = [
+        { name: "Human Expert", size: "—", date: "Paper", overall: 92.8 },
+        { name: "Claude 3.5 Sonnet", size: "—", date: "Paper", overall: 64.1 },
+        { name: "GPT-4o", size: "—", date: "Paper", overall: 64.0 },
+        { name: "Grok-4", size: "—", date: "Paper", overall: 59.4 },
+        { name: "Gemini 2.5 Flash-Lite", size: "—", date: "Paper", overall: 56.7 },
+        { name: "Qwen2-VL (7B)", size: "7B", date: "Paper", overall: 57.5 },
+        { name: "Qwen2.5-VL (7B)", size: "7B", date: "Paper", overall: 55.3 },
+        { name: "Qwen 2.5 Omni (7B)", size: "7B", date: "Paper", overall: 57.9 },
+        { name: "LLaVA-OneVision (7B)", size: "7B", date: "Paper", overall: 55.6 },
+        { name: "NOVA-Pro", size: "—", date: "Paper", overall: 55.8 },
+        { name: "Ola-7B", size: "7B", date: "Paper", overall: 53.1 },
+        { name: "Gemini 2.0 Flash-Lite", size: "—", date: "Paper", overall: 50.2 },
+        { name: "GPT-4o-mini", size: "—", date: "Paper", overall: 50.0 },
+        { name: "EgoGPT-7B", size: "7B", date: "Paper", overall: 55.0 },
+        { name: "NOVA-Lite", size: "—", date: "Paper", overall: 51.0 },
+        { name: "DeepSeekVL2-small (2.8B)", size: "2.8B", date: "Paper", overall: 42.4 },
+        { name: "InternVL2 (8B)", size: "8B", date: "Paper", overall: 33.1 },
+        { name: "VITA 1.5 (7B)", size: "7B", date: "Paper", overall: 22.3 }
+      ];
+
+      // ---------- Mount ----------
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render(<MaverixSite />);
+    </script>
+  </body>
+</html>
